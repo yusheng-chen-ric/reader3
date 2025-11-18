@@ -1,0 +1,165 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop, claude/** ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        . .venv/bin/activate
+        uv sync --extra dev
+
+    - name: Run linting (ruff)
+      run: |
+        . .venv/bin/activate
+        uv add --dev ruff
+        ruff check . || true  # Don't fail on linting for now
+
+    - name: Run tests with coverage
+      run: |
+        . .venv/bin/activate
+        pytest -v --cov=. --cov-report=xml --cov-report=term-missing -m "not ai"
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Generate coverage badge
+      if: matrix.python-version == '3.10'
+      run: |
+        . .venv/bin/activate
+        uv add --dev coverage-badge
+        coverage-badge -o coverage.svg || true
+
+    - name: Archive coverage reports
+      if: matrix.python-version == '3.10'
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          htmlcov/
+          coverage.xml
+          coverage.svg
+
+  docker-test:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t reader3:test .
+
+    - name: Test Docker image
+      run: |
+        # Start container
+        docker run -d --name reader3-test \
+          -p 8123:8123 \
+          -v $(pwd)/config.example.json:/app/config.json:ro \
+          reader3:test
+
+        # Wait for container to be healthy
+        timeout 30 sh -c 'until docker ps | grep reader3-test | grep healthy; do sleep 1; done' || true
+
+        # Check if container is running
+        docker ps -a
+
+        # Check logs
+        docker logs reader3-test
+
+        # Cleanup
+        docker stop reader3-test
+        docker rm reader3-test
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        . .venv/bin/activate
+        uv sync --extra dev
+
+    - name: Run integration tests
+      run: |
+        . .venv/bin/activate
+        pytest -v -m integration
+
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Trivy security scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'

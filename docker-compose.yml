@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  reader3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reader3-app
+    ports:
+      - "8123:8123"
+    volumes:
+      # Persist book data
+      - ./books_data:/app/data
+      # Mount config file
+      - ./config.json:/app/config.json:ro
+      # Mount database
+      - ./reader_data.db:/app/reader_data.db
+      # Optional: Mount EPUB files directory
+      - ./epub_files:/app/epub_files:ro
+    environment:
+      # Optional: Override with environment variables
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8123/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - reader3-network
+
+  # Optional: Local Ollama service for AI
+  ollama:
+    image: ollama/ollama:latest
+    container_name: reader3-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - reader3-network
+    profiles:
+      - ollama  # Only start with: docker-compose --profile ollama up
+
+volumes:
+  ollama_data:
+    driver: local
+
+networks:
+  reader3-network:
+    driver: bridge
