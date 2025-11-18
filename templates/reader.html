@@ -8,27 +8,30 @@
         /* Layout */
         body { margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; font-family: "Georgia", serif; background: #fff; }
 
-        /* Sidebar */
-        #sidebar { width: 300px; background: #f8f9fa; border-right: 1px solid #e9ecef; overflow-y: auto; padding: 20px; flex-shrink: 0; }
+        /* TOC Sidebar */
+        #toc-sidebar { width: 280px; background: #f8f9fa; border-right: 1px solid #e9ecef; overflow-y: auto; padding: 20px; flex-shrink: 0; }
         .nav-header { font-family: -apple-system, sans-serif; font-weight: bold; color: #495057; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #dee2e6; }
         .nav-home { display: block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-family: -apple-system, sans-serif; font-size: 0.9em; }
 
         /* TOC Tree */
         ul.toc-list { list-style: none; padding-left: 0; margin: 0; }
-        ul.toc-list ul { padding-left: 20px; } /* Indent children */
+        ul.toc-list ul { padding-left: 20px; }
         li.toc-item { margin-bottom: 8px; }
         a.toc-link { text-decoration: none; color: #495057; font-size: 0.95em; display: block; padding: 4px 0; line-height: 1.4; }
         a.toc-link:hover { color: #000; text-decoration: underline; }
         a.toc-link.active { color: #d63384; font-weight: bold; }
 
         /* Main Content */
-        #main { flex-grow: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; }
-        .content-container { max-width: 700px; margin: 0 auto; padding: 60px 40px; line-height: 1.8; font-size: 1.15em; color: #212529; }
+        #main { flex-grow: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; display: flex; flex-direction: column; }
+        .content-container { max-width: 700px; margin: 0 auto; padding: 60px 40px; line-height: 1.8; font-size: 1.15em; color: #212529; flex-grow: 1; }
 
-        /* Content Styling (Basic normalization for the book HTML) */
+        /* Content Styling */
         .book-content img { max-width: 100%; height: auto; display: block; margin: 20px auto; }
         .book-content h1, .book-content h2, .book-content h3 { font-family: -apple-system, sans-serif; margin-top: 1.5em; color: #333; }
         .book-content p { margin-bottom: 1.5em; text-align: justify; }
+
+        /* Selection highlight */
+        .book-content ::selection { background: #fff3cd; }
 
         /* Navigation Footer */
         .chapter-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: -apple-system, sans-serif; }
@@ -36,12 +39,69 @@
         .nav-btn:hover { background: #3498db; color: white; }
         .nav-btn.disabled { opacity: 0.5; pointer-events: none; border-color: #ccc; color: #ccc; }
 
+        /* AI Sidebar */
+        #ai-sidebar { width: 400px; background: #ffffff; border-left: 1px solid #e9ecef; display: flex; flex-direction: column; flex-shrink: 0; }
+        #ai-sidebar.collapsed { width: 0; overflow: hidden; }
+
+        /* AI Sidebar Toggle */
+        .ai-toggle { position: fixed; right: 400px; top: 20px; background: #3498db; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px 0 0 4px; z-index: 1000; font-family: -apple-system, sans-serif; font-size: 14px; transition: right 0.3s; }
+        .ai-toggle.collapsed { right: 0; border-radius: 4px 0 0 4px; }
+        .ai-toggle:hover { background: #2980b9; }
+
+        /* Tabs */
+        .ai-tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
+        .ai-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-family: -apple-system, sans-serif; font-size: 14px; border: none; background: none; color: #495057; transition: all 0.2s; }
+        .ai-tab.active { background: white; color: #3498db; border-bottom: 2px solid #3498db; }
+        .ai-tab:hover { background: #e9ecef; }
+
+        /* Tab Content */
+        .ai-content { display: none; flex-direction: column; flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .ai-content.active { display: flex; }
+
+        /* Q&A Section */
+        #qa-history { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; font-family: -apple-system, sans-serif; font-size: 14px; }
+        .qa-item { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; }
+        .qa-question { font-weight: bold; color: #3498db; margin-bottom: 5px; }
+        .qa-answer { color: #495057; line-height: 1.6; }
+
+        #qa-form { display: flex; flex-direction: column; gap: 10px; }
+        #qa-input { padding: 10px; border: 1px solid #e9ecef; border-radius: 4px; font-family: -apple-system, sans-serif; font-size: 14px; resize: vertical; min-height: 60px; }
+        #qa-submit { padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: -apple-system, sans-serif; font-weight: bold; }
+        #qa-submit:hover { background: #2980b9; }
+        #qa-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Flashcard Section */
+        .flashcard-info { font-family: -apple-system, sans-serif; font-size: 13px; color: #6c757d; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; }
+
+        #selection-display { padding: 10px; background: #fff3cd; border-radius: 4px; margin-bottom: 15px; font-size: 13px; max-height: 150px; overflow-y: auto; font-family: -apple-system, sans-serif; }
+        #selection-display.empty { display: none; }
+
+        .flashcard-options { display: flex; gap: 10px; margin-bottom: 15px; }
+        .flashcard-options select, .flashcard-options input { flex: 1; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px; font-family: -apple-system, sans-serif; font-size: 13px; }
+
+        #generate-flashcards { padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: -apple-system, sans-serif; font-weight: bold; width: 100%; }
+        #generate-flashcards:hover { background: #218838; }
+        #generate-flashcards:disabled { background: #ccc; cursor: not-allowed; }
+
+        .generated-cards { margin-top: 20px; }
+        .card-preview { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 10px; font-family: -apple-system, sans-serif; font-size: 14px; }
+        .card-front { font-weight: bold; color: #3498db; margin-bottom: 8px; }
+        .card-back { color: #495057; }
+
+        /* Loading State */
+        .loading { opacity: 0.6; pointer-events: none; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Link to decks */
+        .deck-link { display: block; margin-top: 20px; text-align: center; padding: 10px; background: #e9ecef; border-radius: 4px; text-decoration: none; color: #495057; font-family: -apple-system, sans-serif; font-size: 13px; }
+        .deck-link:hover { background: #dee2e6; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar">
+    <!-- TOC SIDEBAR -->
+    <div id="toc-sidebar">
         <a href="/" class="nav-home">← Back to Library</a>
         <div class="nav-header">{{ book.metadata.title }}</div>
 
@@ -50,39 +110,11 @@
             <ul class="toc-list">
             {% for item in items %}
                 <li class="toc-item">
-                    <!--
-                        Matching Logic:
-                        If the TOC item filename matches the current chapter filename, mark active.
-                        Ideally we match spine indices, but Reader 3 TOC maps to filenames.
-                        We use a simple hash matching logic here.
-                    -->
                     {% set is_active = current_chapter.href == item.file_href %}
-
-                    <!--
-                       We need to find which linear chapter index (0, 1, 2) corresponds
-                       to this TOC entry file.
-                       Since that's hard to calculate in Jinja, we just link to the
-                       file anchor. BUT, to make our linear navigation work, we
-                       rely on the fact that the user is currently reading 'chapter_index'.
-
-                       Ideally, clicking a TOC link should find the 'index' of that file.
-                       For simplicity in this version: We link to the 'href' (filename)
-                       and let JavaScript or Backend handle it?
-
-                       Actually, let's just link to the file. The browser interprets #anchors.
-                       However, our router uses /read/book/INDEX.
-
-                       SIMPLE FIX: We won't link the TOC to the route index in this simple version
-                       unless we build a map. We will visually show structure,
-                       but rely on "Previous/Next" for linear reading.
-
-                       BETTER FIX: Use JavaScript to match filenames.
-                    -->
                     <a href="#" onclick="findAndGo('{{ item.file_href }}')"
                        class="toc-link {% if is_active %}active{% endif %}">
                         {{ item.title }}
                     </a>
-
                     {% if item.children %}
                         {{ render_toc(item.children) }}
                     {% endif %}
@@ -97,7 +129,7 @@
     <!-- MAIN CONTENT -->
     <div id="main">
         <div class="content-container">
-            <div class="book-content">
+            <div class="book-content" id="book-content">
                 {{ current_chapter.content | safe }}
             </div>
 
@@ -121,9 +153,72 @@
         </div>
     </div>
 
+    <!-- AI SIDEBAR TOGGLE -->
+    <button class="ai-toggle" id="ai-toggle" onclick="toggleAISidebar()">AI Tools</button>
+
+    <!-- AI SIDEBAR -->
+    <div id="ai-sidebar" class="collapsed">
+        <!-- Tabs -->
+        <div class="ai-tabs">
+            <button class="ai-tab active" onclick="switchTab('qa')">Q&A</button>
+            <button class="ai-tab" onclick="switchTab('flashcards')">Flashcards</button>
+        </div>
+
+        <!-- Q&A Tab -->
+        <div class="ai-content active" id="qa-content">
+            <div id="qa-history">
+                {% if qa_history %}
+                    {% for qa in qa_history|reverse %}
+                    <div class="qa-item">
+                        <div class="qa-question">Q: {{ qa.question }}</div>
+                        <div class="qa-answer">A: {{ qa.answer }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #6c757d; font-family: -apple-system, sans-serif; font-size: 13px;">
+                        No questions asked yet. Select text and ask away!
+                    </p>
+                {% endif %}
+            </div>
+
+            <form id="qa-form" onsubmit="askQuestion(event)">
+                <textarea id="qa-input" placeholder="Ask a question about what you're reading..."></textarea>
+                <button type="submit" id="qa-submit">Ask</button>
+            </form>
+        </div>
+
+        <!-- Flashcards Tab -->
+        <div class="ai-content" id="flashcards-content">
+            <div class="flashcard-info">
+                Select text in the book, then click "Generate Flashcards" to create study cards with AI.
+            </div>
+
+            <div id="selection-display" class="empty"></div>
+
+            <div class="flashcard-options">
+                <select id="card-type">
+                    <option value="basic">Basic Q&A</option>
+                    <option value="cloze">Cloze Deletion</option>
+                </select>
+                <input type="number" id="num-cards" value="3" min="1" max="10" />
+            </div>
+
+            <button id="generate-flashcards" onclick="generateFlashcards()" disabled>
+                Generate Flashcards
+            </button>
+
+            <div class="generated-cards" id="generated-cards"></div>
+
+            <a href="/decks" class="deck-link">View All Decks & Review →</a>
+        </div>
+    </div>
+
     <script>
+        // Context variables from backend
+        const BOOK_ID = "{{ book_id }}";
+        const CHAPTER_INDEX = {{ chapter_index }};
+
         // Helper to map TOC filenames to Spine Indices
-        // Pass the spine data from python to JS
         const spineMap = {
             {% for ch in book.spine %}
             "{{ ch.href }}": {{ ch.order }},
@@ -131,22 +226,166 @@
         };
 
         function findAndGo(filename) {
-            // The TOC usually has specific filenames e.g. "text/part001.html"
-            // Sometimes it has anchors "text/part001.html#header"
-            // We strip the anchor to find the page index
             const cleanFile = filename.split('#')[0];
-            const anchor = filename.split('#')[1];
-
             const idx = spineMap[cleanFile];
-
             if (idx !== undefined) {
-                let url = "/read/{{ book_id }}/" + idx;
-                // If there was an anchor, we could try to scroll to it,
-                // but simple page loads often lose anchor position without extra JS.
-                // Let's just go to the page.
-                window.location.href = url;
+                window.location.href = "/read/" + BOOK_ID + "/" + idx;
+            }
+        }
+
+        // AI Sidebar Toggle
+        function toggleAISidebar() {
+            const sidebar = document.getElementById('ai-sidebar');
+            const toggle = document.getElementById('ai-toggle');
+            sidebar.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.ai-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.ai-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
+
+        // Text Selection Tracking
+        let selectedText = '';
+
+        document.getElementById('book-content').addEventListener('mouseup', function() {
+            const selection = window.getSelection();
+            selectedText = selection.toString().trim();
+
+            const display = document.getElementById('selection-display');
+            const generateBtn = document.getElementById('generate-flashcards');
+
+            if (selectedText.length > 20) {
+                display.textContent = selectedText;
+                display.classList.remove('empty');
+                generateBtn.disabled = false;
             } else {
-                console.log("Could not find index for", filename);
+                display.classList.add('empty');
+                generateBtn.disabled = true;
+            }
+        });
+
+        // Q&A Functionality
+        async function askQuestion(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('qa-input');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            const submitBtn = document.getElementById('qa-submit');
+            const historyDiv = document.getElementById('qa-history');
+
+            // Get context (current chapter text)
+            const context = document.getElementById('book-content').innerText.substring(0, 3000);
+
+            // Disable form
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Asking...';
+
+            try {
+                const response = await fetch('/api/ask-question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        book_id: BOOK_ID,
+                        chapter_index: CHAPTER_INDEX,
+                        question: question,
+                        context: context
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Add to history
+                    const qaItem = document.createElement('div');
+                    qaItem.className = 'qa-item';
+                    qaItem.innerHTML = `
+                        <div class="qa-question">Q: ${question}</div>
+                        <div class="qa-answer">A: ${data.answer}</div>
+                    `;
+                    historyDiv.appendChild(qaItem);
+                    historyDiv.scrollTop = historyDiv.scrollHeight;
+
+                    // Clear input
+                    input.value = '';
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to get answer'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Ask';
+            }
+        }
+
+        // Flashcard Generation
+        async function generateFlashcards() {
+            if (!selectedText || selectedText.length < 20) {
+                alert('Please select some text first (at least 20 characters)');
+                return;
+            }
+
+            const cardType = document.getElementById('card-type').value;
+            const numCards = parseInt(document.getElementById('num-cards').value);
+            const generateBtn = document.getElementById('generate-flashcards');
+            const cardsDiv = document.getElementById('generated-cards');
+
+            // Get surrounding context
+            const context = document.getElementById('book-content').innerText.substring(0, 2000);
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+            cardsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/generate-flashcards', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        book_id: BOOK_ID,
+                        chapter_index: CHAPTER_INDEX,
+                        selected_text: selectedText,
+                        context: context,
+                        num_cards: numCards,
+                        card_type: cardType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    cardsDiv.innerHTML = '<h4 style="font-family: -apple-system, sans-serif; margin-bottom: 15px;">Generated Cards:</h4>';
+
+                    data.cards.forEach(card => {
+                        const cardPreview = document.createElement('div');
+                        cardPreview.className = 'card-preview';
+                        cardPreview.innerHTML = `
+                            <div class="card-front">${card.front}</div>
+                            <div class="card-back">${card.back}</div>
+                        `;
+                        cardsDiv.appendChild(cardPreview);
+                    });
+
+                    cardsDiv.innerHTML += '<p style="color: #28a745; font-family: -apple-system, sans-serif; font-size: 13px; margin-top: 10px;">✓ Cards saved to your deck!</p>';
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to generate flashcards'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Flashcards';
             }
         }
     </script>

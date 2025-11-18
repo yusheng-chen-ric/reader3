@@ -12,3 +12,5 @@ wheels/
 # Custom
 *_data/
 *.epub
+config.json
+reader_data.db

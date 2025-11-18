@@ -1,7 +1,7 @@
 [project]
 name = "reader3"
-version = "0.1.0"
-description = "Simple EPUB reader web app"
+version = "0.2.0"
+description = "AI-powered e-reader with flashcards and Q&A"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -10,4 +10,17 @@ dependencies = [
     "fastapi>=0.121.2",
     "jinja2>=3.1.6",
     "uvicorn>=0.38.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+# AI provider dependencies (install only what you need)
+anthropic = ["anthropic>=0.39.0"]
+openai = ["openai>=1.0.0"]
+gemini = ["google-generativeai>=0.8.0"]
+# Install all providers
+all = [
+    "anthropic>=0.39.0",
+    "openai>=1.0.0",
+    "google-generativeai>=0.8.0",
 ]
